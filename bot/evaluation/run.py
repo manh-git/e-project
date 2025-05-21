@@ -1,3 +1,9 @@
+import os
+import sys
+project_root = '/content/project'
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from bot.evaluation.mark_Runner import BenchmarkRunner
 from bot.heuristic_dodge import HeuristicDodgeBot
 from bot.deep_learning.param_input.numpy_agent import ParamNumpyAgent
