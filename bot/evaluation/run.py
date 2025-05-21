@@ -1,38 +1,31 @@
-import os
-import sys
-
-project_root = '/content/AI-project'
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-
-from bot.evaluation.mark_Runner import BenchmarkRunner
+from benchmark_runner import BenchmarkRunner
 from bot.heuristic_dodge import HeuristicDodgeBot
-from game.game_core import Game
+from bot.deep_learning.param_input.numpy_agent import ParamNumpyAgent
+from bot.deep_learning.param_input.pytorch_agent import ParamTorchAgent
 from configs.bot_config import DodgeAlgorithm
-import csv
 
+def create_heuristic_bot(method):
+    return lambda game: HeuristicDodgeBot(game, method)
 
+def create_numpy_bot():
+    return lambda game: ParamNumpyAgent(game, load_saved_model=True)
 
-from enum import Enum
+def create_torch_bot():
+    return lambda game: ParamTorchAgent(game, load_saved_model=True)
 
-class DodgeAlgorithm(Enum):
-    FURTHEST_SAFE_DIRECTION = 1
-    LEAST_DANGER_PATH = 2
-    LEAST_DANGER_PATH_ADVANCED = 3
-    RANDOM_SAFE_ZONE = 4
-    OPPOSITE_THREAT_DIRECTION = 5
 def main():
-    
-    game = Game()
-    dodgeMethod = {
-    "Furthest Safe Direction": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.FURTHEST_SAFE_DIRECTION),
-    "Least Danger": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.LEAST_DANGER_PATH),
-    "Least Danger Advanced": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED),
-    "Opposite Threat Direction": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION),
-    "Random Safe Zone": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.RANDOM_SAFE_ZONE),
-}
-    runner = BenchmarkRunner()
-    save_path= "/content/drive/MyDrive/game_ai/benchmark_results.csv"
-    runner.run(dodgeMethod,save_csv=True,csv_filename = save_path)
+    bots = {
+        "Furthest Safe Direction": create_heuristic_bot(DodgeAlgorithm.FURTHEST_SAFE_DIRECTION),
+        "Least Danger": create_heuristic_bot(DodgeAlgorithm.LEAST_DANGER_PATH),
+        "Least Danger Advanced": create_heuristic_bot(DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED),
+        "Opposite Threat Direction": create_heuristic_bot(DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION),
+        "Random Safe Zone": create_heuristic_bot(DodgeAlgorithm.RANDOM_SAFE_ZONE),
+        "DL - Numpy": create_numpy_bot(),
+        "DL - Torch": create_torch_bot()
+    }
+
+    runner = BenchmarkRunner(num_games=10)
+    runner.run(bots, save_csv=True, plot=True, csv_filename="benchmark_results.csv")
+
 if __name__ == "__main__":
     main()
