@@ -19,11 +19,14 @@ class BenchmarkRunner:
         bot_name, bot_factory, game_id = args
         game = Game()
         bot = bot_factory(game)
-        game.set_bot(bot)  # giả sử game có method để gán bot
+        game.set_bot(bot)
         score = game.run()
         return {"bot": bot_name, "game_id": game_id, "score": score}
 
-    def run(self, bot_factories, save_csv=True, plot=True, csv_filename="benchmark_results.csv"):
+    def run(self, bot_factories, save_csv=True, plot=True, 
+            csv_filename="benchmark_results.csv", plot_filename="benchmark_plot.png"):
+        
+        
         tasks = [
             (bot_name, bot_factory, game_id)
             for bot_name, bot_factory in bot_factories.items()
@@ -33,11 +36,13 @@ class BenchmarkRunner:
         with Pool() as pool:
             self.results = pool.map(self.run_single_game, tasks)
 
+       
         if save_csv:
             self._save_results(csv_filename)
 
+   
         if plot:
-            self._plot_results()
+            self._plot_results(output_path=plot_filename)
 
     def _save_results(self, filename):
         with open(filename, "w", newline="") as f:
@@ -45,17 +50,20 @@ class BenchmarkRunner:
             writer.writeheader()
             writer.writerows(self.results)
 
-    def _plot_results(self):
+    def _plot_results(self, output_path=None):
         df = pd.DataFrame(self.results)
         sns.set(style="whitegrid")
         plt.figure(figsize=(14, 7))
-
         sns.lineplot(data=df, x="game_id", y="score", hue="bot", marker="o")
-
         plt.title("Bot Score over Multiple Games")
         plt.xlabel("Game Number")
         plt.ylabel("Score")
         plt.legend(title="Bot/Algorithm")
         plt.tight_layout()
-        plt.show()
+
+        if output_path:
+            plt.savefig(output_path)
+            print(f"✅ Đã lưu biểu đồ vào: {output_path}")
+        else:
+            plt.show()
 
