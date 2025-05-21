@@ -18,15 +18,12 @@ class BenchmarkRunner:
     def run_single_game(self, args):
         bot_name, bot_factory, game_id = args
         game = Game()
-        bot = bot_factory(game)
-        game.set_bot(bot)
-        score = game.run()
+        bot = bot_factory(game)  
+        score = game.run(bot)
         return {"bot": bot_name, "game_id": game_id, "score": score}
 
     def run(self, bot_factories, save_csv=True, plot=True, 
             csv_filename="benchmark_results.csv", plot_filename="benchmark_plot.png"):
-        
-        
         tasks = [
             (bot_name, bot_factory, game_id)
             for bot_name, bot_factory in bot_factories.items()
@@ -36,11 +33,9 @@ class BenchmarkRunner:
         with Pool() as pool:
             self.results = pool.map(self.run_single_game, tasks)
 
-       
         if save_csv:
             self._save_results(csv_filename)
 
-   
         if plot:
             self._plot_results(output_path=plot_filename)
 
@@ -66,4 +61,3 @@ class BenchmarkRunner:
             print(f"✅ Đã lưu biểu đồ vào: {output_path}")
         else:
             plt.show()
-
