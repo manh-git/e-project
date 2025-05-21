@@ -8,27 +8,16 @@ class DodgeAlgorithm(Enum):
     RANDOM_SAFE_ZONE = 3
     OPPOSITE_THREAT_DIRECTION = 4
     
-    # Deep learning algorithms (placeholder for future)
-    DQN = 5
-    PPO = 6
-    A2C = 7
-
-# Dictionary mapping algorithms to their categories
-ALGORITHM_CATEGORIES = {
-    DodgeAlgorithm.FURTHEST_SAFE_DIRECTION: 'heuristic',
-    DodgeAlgorithm.LEAST_DANGER_PATH: 'heuristic',
-    DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED: 'heuristic',
-    DodgeAlgorithm.RANDOM_SAFE_ZONE: 'heuristic',
-    DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION: 'heuristic',
-    DodgeAlgorithm.DQN: 'deep_learning',
-    DodgeAlgorithm.PPO: 'deep_learning',
-    DodgeAlgorithm.A2C: 'deep_learning'
-}
+    # Deep learning algorithms
+    DL_PARAM_INPUT_NUMPY = 5
+    DL_PARAM_INPUT_TORCH = 6
+    DL_VISION_INPUT_NUMPY = 7
+    DL_VISION_INPUT_TORCH = 8 
 
 BOT_ACTION = True               # True if bot is allowed to take action : set by dev
-BOT_DRAW = True                # True if bot is allowed to draw : set by dev
+BOT_DRAW = False                # True if bot is allowed to draw : set by dev
 FILTER_MOVE_INTO_WALL = True
-WALL_CLOSE_RANGE = 10
+WALL_CLOSE_RANGE = 30
 
 USE_WALL_PENALTY = True         # Phạt khi gần tường
 # Mức độ ảnh hưởng của penalty
