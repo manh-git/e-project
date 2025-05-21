@@ -30,8 +30,8 @@ class BenchmarkRunner:
             for game_id in range(self.num_games)
         ]
 
-        with Pool() as pool:
-            self.results = pool.map(self.run_single_game, tasks)
+        self.results = [self.run_single_game(task) for task in tasks]
+
 
         if save_csv:
             self._save_results(csv_filename)
