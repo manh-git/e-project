@@ -1,4 +1,4 @@
-from benchmark_runner import BenchmarkRunner
+from bot.evaluation.mark_Runner import BenchmarkRunner
 from bot.heuristic_dodge import HeuristicDodgeBot
 from bot.deep_learning.param_input.numpy_agent import ParamNumpyAgent
 from bot.deep_learning.param_input.pytorch_agent import ParamTorchAgent
