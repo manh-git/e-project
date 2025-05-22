@@ -28,15 +28,14 @@ def main():
     game = Game()
 
     dodge_methods = {
-        "Furthest Safe Direction": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.FURTHEST_SAFE_DIRECTION),
-        "Least Danger": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.LEAST_DANGER_PATH),
-        "Least Danger Advanced": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED),
-        "Opposite Threat Direction": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION),
-        "Random Safe Zone": lambda: HeuristicDodgeBot(game, DodgeAlgorithm.RANDOM_SAFE_ZONE),
-        "DL Param Numpy": lambda: ParamNumpyAgent(game, load_saved_model=True),
-        "DL Param Torch": lambda: ParamTorchAgent(game, load_saved_model=True)
-    }
-
+    "Furthest Safe Direction": DodgeAlgorithm.FURTHEST_SAFE_DIRECTION,
+    "Least Danger": DodgeAlgorithm.LEAST_DANGER_PATH,
+    "Least Danger Advanced": DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED,
+    "Opposite Threat Direction": DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION,
+    "Random Safe Zone": DodgeAlgorithm.RANDOM_SAFE_ZONE,
+    "DL Param Numpy": DodgeAlgorithm.DL_PARAM_INPUT_NUMPY,
+    "DL Param Torch": DodgeAlgorithm.DL_PARAM_INPUT_TORCH
+}
     runner = BenchmarkRunner()
     save_path = "/content/drive/MyDrive/game_ai/benchmark_score_plot.png"
     runner.run(dodge_methods=dodge_methods, save_plot=True, save_path=save_path)
