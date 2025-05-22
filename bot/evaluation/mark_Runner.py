@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from concurrent.futures import ThreadPoolExecutor
 import pygame
+import traceback
 
 # Cấu hình project path
 project_root = '/content/project'
@@ -29,12 +30,14 @@ class HeadlessBenchmark:
             game = Game()  # Game tự khởi tạo pygame nếu cần
             bot_manager = BotManager(game)
             
-            # Tạo bot
-            bot = {
+            # Tạo bot với dict mapping đúng enum
+            bot_creators = {
                 DodgeAlgorithm.FURTHEST_SAFE_DIRECTION: lambda: bot_manager.create_bot(DodgeAlgorithm.FURTHEST_SAFE_DIRECTION),
-                "DL_NUMPY": lambda: bot_manager.create_bot(DodgeAlgorithm.DL_PARAM_INPUT_NUMPY)
-            }.get(algorithm, lambda: None)()
+                DodgeAlgorithm.LEAST_DANGER_PATH: lambda: bot_manager.create_bot(DodgeAlgorithm.LEAST_DANGER_PATH),
+                DodgeAlgorithm.DL_PARAM_INPUT_NUMPY: lambda: bot_manager.create_bot(DodgeAlgorithm.DL_PARAM_INPUT_NUMPY)
+            }
             
+            bot = bot_creators.get(algorithm, lambda: None)()
             if not bot:
                 raise ValueError(f"Unknown algorithm: {algorithm}")
             
@@ -56,6 +59,7 @@ class HeadlessBenchmark:
             
         except Exception as e:
             print(f"[ERROR] {name} run {run_idx}: {str(e)}")
+            traceback.print_exc()
             return None
 
     def run(self, algorithms):
@@ -76,15 +80,17 @@ class HeadlessBenchmark:
 
 def setup_environment():
     print("[DEBUG] Bắt đầu setup môi trường")
-    try:
-        from google.colab import drive
-        drive.mount('/content/drive')
-        os.environ['SDL_VIDEODRIVER'] = 'dummy'
-        print("[DEBUG] Mount drive thành công")
-    except ImportError:
+    # Chỉ mount drive khi chạy trên Colab thật sự
+    if "COLAB_GPU" in os.environ or "COLAB_TPU_ADDR" in os.environ:
+        try:
+            from google.colab import drive
+            drive.mount('/content/drive')
+            os.environ['SDL_VIDEODRIVER'] = 'dummy'
+            print("[DEBUG] Mount drive thành công")
+        except Exception as e:
+            print(f"[WARN] Lỗi mount drive: {e}")
+    else:
         print("[DEBUG] Không phải môi trường Colab, bỏ qua mount")
-    except Exception as e:
-        print(f"[WARN] Lỗi mount drive: {e}")
 
     pygame.init()
     pygame.display.set_mode((1, 1))
@@ -94,6 +100,10 @@ def setup_environment():
 def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
     """Lưu kết quả và biểu đồ"""
     os.makedirs(base_path, exist_ok=True)
+
+    if df.empty:
+        print("[WARN] DataFrame kết quả rỗng, không lưu được file!")
+        return None, None
     
     # Lưu CSV
     csv_path = f"{base_path}/benchmark_results.csv"
@@ -121,7 +131,7 @@ if __name__ == "__main__":
     algorithms = {
         "Furthest Safe": DodgeAlgorithm.FURTHEST_SAFE_DIRECTION,
         "Least Danger": DodgeAlgorithm.LEAST_DANGER_PATH,
-        "DL Numpy": "DL_NUMPY"
+        "DL Numpy": DodgeAlgorithm.DL_PARAM_INPUT_NUMPY
     }
     
     # 3. Chạy benchmark
@@ -131,10 +141,13 @@ if __name__ == "__main__":
     # 4. Lưu và hiển thị kết quả
     csv_file, plot_file = save_results(results_df)
     
-    print("\nBenchmark hoàn tất!")
-    print(f"→ Kết quả CSV: {csv_file}")
-    print(f"→ Biểu đồ: {plot_file}")
-    print("\nThống kê điểm số:")
-    print(results_df.groupby('algorithm')['score'].describe())
+    if csv_file and plot_file:
+        print("\nBenchmark hoàn tất!")
+        print(f"→ Kết quả CSV: {csv_file}")
+        print(f"→ Biểu đồ: {plot_file}")
+        print("\nThống kê điểm số:")
+        print(results_df.groupby('algorithm')['score'].describe())
+    else:
+        print("\nBenchmark không có kết quả để lưu!")
     
     pygame.quit()
