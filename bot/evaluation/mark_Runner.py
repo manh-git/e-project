@@ -156,7 +156,7 @@ if __name__ == "__main__":
         "DL Param Torch": DodgeAlgorithm.DL_PARAM_INPUT_TORCH,
     }
 
-    benchmark = HeadlessBenchmark(num_runs=10, num_threads=4)
+    benchmark = HeadlessBenchmark(num_runs=50, num_threads=4)
     results_df = benchmark.run(algorithms)
 
     csv_file, plot_file = save_results(results_df)
