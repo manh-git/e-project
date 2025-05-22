@@ -75,18 +75,20 @@ class HeadlessBenchmark:
         return pd.DataFrame(self.results)
 
 def setup_environment():
+    print("[DEBUG] Bắt đầu setup môi trường")
     try:
-        from IPython import get_ipython
-        ipy = get_ipython()
-        if ipy and 'google.colab' in str(ipy):
-            from google.colab import drive
-            drive.mount('/content/drive')
-            os.environ['SDL_VIDEODRIVER'] = 'dummy'
-    except Exception:
-        pass
+        from google.colab import drive
+        drive.mount('/content/drive')
+        os.environ['SDL_VIDEODRIVER'] = 'dummy'
+        print("[DEBUG] Mount drive thành công")
+    except ImportError:
+        print("[DEBUG] Không phải môi trường Colab, bỏ qua mount")
+    except Exception as e:
+        print(f"[WARN] Lỗi mount drive: {e}")
 
     pygame.init()
     pygame.display.set_mode((1, 1))
+    print("[DEBUG] pygame đã khởi tạo")
 
 
 def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
@@ -112,6 +114,7 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
 
 if __name__ == "__main__":
     # 1. Cấu hình môi trường
+    print("[DEBUG] Bắt đầu chương trình chính")
     setup_environment()
     
     # 2. Định nghĩa thuật toán cần test
