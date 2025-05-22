@@ -14,20 +14,20 @@ from game.game_core import Game
 from configs.bot_config import DodgeAlgorithm 
 
 def main():
-    game = Game()
-
     dodge_methods = {
-        "Furthest Safe Direction": DodgeAlgorithm.FURTHEST_SAFE_DIRECTION,
-        
+        "Furthest Safe Direction": lambda game: HeuristicDodgeBot(game, DodgeAlgorithm.FURTHEST_SAFE_DIRECTION),
+        "Least Danger": lambda game: HeuristicDodgeBot(game, DodgeAlgorithm.LEAST_DANGER_PATH),
     }
 
-     runner = BenchmarkRunner(run_counts=[3])
-
-    save_path = "/content/drive/MyDrive/game_ai/benchmark_score_plot.png"
-    csv_path = "/content/drive/MyDrive/game_ai/benchmark_results.csv"
-    runner.run(dodge_methods=dodge_methods, save_csv=True, csv_filename=csv_path, save_plot=True, save_path=save_path)
-
+    runner = BenchmarkRunner(run_counts=[3])
+    runner.run(
+        dodge_methods=dodge_methods,
+        save_csv=True,
+        csv_filename="/content/drive/MyDrive/game_ai/benchmark_results.csv",
+        save_plot=True,
+        save_path="/content/drive/MyDrive/game_ai/benchmark_score_plot.png"
+    )
 
 if __name__ == "__main__":
-    multiprocessing.set_start_method('spawn', force=True)  
+    multiprocessing.set_start_method('spawn', force=True)
     main()
