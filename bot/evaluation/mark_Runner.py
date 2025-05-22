@@ -6,6 +6,7 @@ from google.colab import drive
 
 from game.game_core import Game
 from bot.bot_manager import BotManager
+from bot.heuristic_dodge import HeuristicDodgeBot
 
 class BenchmarkRunner:
     def __init__(self, run_counts=[10, 50, 100, 200, 1000]):
@@ -27,9 +28,12 @@ class BenchmarkRunner:
                     game = Game()
                     bot_manager = BotManager(game)
                     bot = bot_manager.create_bot(algorithm_enum)
-                    
+
                     try:
-                        game.run(bot, mode="eval", render=False) 
+                        if isinstance(bot, HeuristicDodgeBot):
+                            game.run(bot, mode="heuristic", render=False)
+                        else:
+                            game.run(bot, mode="eval", render=False)
                         score = game.score
                     except Exception as e:
                         print(f"Bot {name} lỗi trong lượt chạy: {e}")
