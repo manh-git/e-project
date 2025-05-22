@@ -4,6 +4,9 @@ import pandas as pd
 import csv
 from google.colab import drive
 
+from game.game_core import Game
+from bot.bot_manager import BotManager
+
 class BenchmarkRunner:
     def __init__(self, run_counts=[10, 50, 100, 200, 1000]):
         self.run_counts = run_counts
@@ -14,16 +17,20 @@ class BenchmarkRunner:
 
         all_data = []
 
-        for name, bot_creator in dodge_methods.items():
+        for name, algorithm_enum in dodge_methods.items():
             print(f"Running: {name}")
             self.results[name] = {}
 
             for run_count in self.run_counts:
                 scores = []
                 for _ in range(run_count):
-                    bot = bot_creator()
+                    game = Game()
+                    bot_manager = BotManager(game)
+                    bot = bot_manager.create_bot(algorithm_enum)
+                    
                     try:
-                        score = bot.play()  # bot cần có
+                        game.run(bot, mode="eval", render=False) 
+                        score = game.score
                     except Exception as e:
                         print(f"Bot {name} lỗi trong lượt chạy: {e}")
                         score = 0
@@ -59,4 +66,3 @@ class BenchmarkRunner:
             plt.grid(True)
             plt.savefig(save_path)
             plt.show()
-
