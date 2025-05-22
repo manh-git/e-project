@@ -76,10 +76,17 @@ class HeadlessBenchmark:
 
 def setup_environment():
     """Cấu hình môi trường cho Colab hoặc local"""
-    if 'google.colab' in str(get_ipython()):
-        from google.colab import drive
-        drive.mount('/content/drive')
-        os.environ['SDL_VIDEODRIVER'] = 'dummy'
+    try:
+        from IPython import get_ipython
+        ipython = get_ipython()
+        if ipython and 'google.colab' in str(ipython):
+            from google.colab import drive
+            drive.mount('/content/drive')
+            os.environ['SDL_VIDEODRIVER'] = 'dummy'
+    except ImportError:
+        # Không phải môi trường IPython, bỏ qua
+        pass
+
     pygame.init()
     pygame.display.set_mode((1, 1))
 
