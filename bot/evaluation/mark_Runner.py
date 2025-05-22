@@ -15,7 +15,7 @@ from bot.bot_manager import BotManager
 from bot.heuristic_dodge import HeuristicDodgeBot
 
 class BenchmarkRunner:
-    def __init__(self, run_counts=[5,10,20]):
+    def __init__(self, run_counts=[10,20,50,100]):
         self.run_counts = run_counts
         self.results = {}
 
@@ -80,4 +80,5 @@ class BenchmarkRunner:
             plt.grid(True)
             plt.savefig(save_path)
             plt.show()
+
 
