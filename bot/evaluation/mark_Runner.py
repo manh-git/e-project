@@ -80,21 +80,23 @@ class HeadlessBenchmark:
 
 def setup_environment():
     print("[DEBUG] Bắt đầu setup môi trường")
-    # Chỉ mount drive khi chạy trên Colab thật sự
-    if "COLAB_GPU" in os.environ or "COLAB_TPU_ADDR" in os.environ:
-        try:
+    try:
+        if 'google.colab' in sys.modules:
             from google.colab import drive
             drive.mount('/content/drive')
-            os.environ['SDL_VIDEODRIVER'] = 'dummy'
             print("[DEBUG] Mount drive thành công")
-        except Exception as e:
-            print(f"[WARN] Lỗi mount drive: {e}")
-    else:
-        print("[DEBUG] Không phải môi trường Colab, bỏ qua mount")
+        else:
+            print("[DEBUG] Không phải môi trường Colab, bỏ qua mount")
+    except Exception as e:
+        print(f"[WARN] Lỗi mount drive: {e}")
 
     pygame.init()
-    pygame.display.set_mode((1, 1))
+    try:
+        pygame.display.set_mode((1, 1))
+    except Exception as e:
+        print(f"[WARN] Không thể tạo cửa sổ pygame: {e}")
     print("[DEBUG] pygame đã khởi tạo")
+
 
 
 def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
