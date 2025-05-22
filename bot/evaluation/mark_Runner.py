@@ -1,9 +1,10 @@
+# mark_runner.py
 import os
 os.environ["SDL_VIDEODRIVER"] = "dummy"
+os.environ["SDL_AUDIODRIVER"] = "dummy"
 
-import pygame
-pygame.init()
-pygame.display.set_mode((1, 1))
+import sys
+sys.stderr = open(os.devnull, 'w')  # tắt ALSA warnings
 
 import traceback
 import matplotlib.pyplot as plt
@@ -12,11 +13,21 @@ import pandas as pd
 import csv
 from multiprocessing import Pool
 
-from game.game_core import Game
-from bot.bot_manager import BotManager
-
 def run_single_bot(name, algorithm_enum, run_counts):
-    
+    import os
+    os.environ["SDL_VIDEODRIVER"] = "dummy"
+    os.environ["SDL_AUDIODRIVER"] = "dummy"
+
+    import pygame
+    pygame.init()
+    pygame.display.set_mode((1, 1))
+
+    import numpy as np
+    import traceback
+
+    from game.game_core import Game
+    from bot.bot_manager import BotManager
+
     results = {}
     all_data = []
 
@@ -51,6 +62,7 @@ def run_single_bot(name, algorithm_enum, run_counts):
         })
 
     return name, results, all_data
+
 
 class BenchmarkRunner:
     def __init__(self, run_counts=[10, 50, 100]):
@@ -91,5 +103,6 @@ class BenchmarkRunner:
             plt.grid(True)
             plt.savefig(save_path)
             plt.show()
+
 
 
