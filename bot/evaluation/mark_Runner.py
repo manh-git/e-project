@@ -3,6 +3,7 @@ os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 import pygame
 pygame.init()
+pygame.display.set_mode((1, 1))  # tạo cửa sổ ảo nhỏ, tránh lỗi NoneType
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,7 +32,7 @@ class BenchmarkRunner:
                 scores = []
                 for _ in range(run_count):
                     game = Game()
-                    game.surface = pygame.Surface((800, 800))
+                    # BỎ game.surface = pygame.Surface((800, 800)) đi nhé
 
                     bot_manager = BotManager(game)
                     bot = bot_manager.create_bot(algorithm_enum)
@@ -78,3 +79,4 @@ class BenchmarkRunner:
             plt.grid(True)
             plt.savefig(save_path)
             plt.show()
+
