@@ -35,7 +35,7 @@ class BenchmarkRunner:
                     
 
                     bot_manager = BotManager(game)
-                   
+                    bot = bot_manager.create_bot(algorithm_enum)
 
                     try:
                         if getattr(bot, "is_heuristic", False) or not hasattr(bot, "train"):
