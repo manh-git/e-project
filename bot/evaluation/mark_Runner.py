@@ -1,63 +1,62 @@
-import csv
 import matplotlib.pyplot as plt
-import seaborn as sns
+import numpy as np
 import pandas as pd
-from multiprocessing import Pool
-from game.game_core import Game
-from bot.heuristic_dodge import HeuristicDodgeBot
-from bot.deep_learning.param_input.numpy_agent import ParamNumpyAgent
-from bot.deep_learning.param_input.pytorch_agent import ParamTorchAgent
-from configs.bot_config import DodgeAlgorithm
-
+import csv
+from google.colab import drive
 
 class BenchmarkRunner:
-    def __init__(self, num_games=10):
-        self.num_games = num_games
-        self.results = []
+    def __init__(self, run_counts=[10, 50, 100, 200, 1000]):
+        self.run_counts = run_counts
+        self.results = {}
 
-    def run_single_game(self, args):
-        bot_name, bot_factory, game_id = args
-        game = Game()
-        bot = bot_factory(game)  
-        score = game.run(bot)
-        return {"bot": bot_name, "game_id": game_id, "score": score}
+    def run(self, dodge_methods, save_csv=True, csv_filename="benchmark_result.csv",
+            save_plot=True, save_path="/content/drive/MyDrive/benchmark_score_plot.png"):
 
-    def run(self, bot_factories, save_csv=True, plot=True, 
-            csv_filename="benchmark_results.csv", plot_filename="benchmark_plot.png"):
-        tasks = [
-            (bot_name, bot_factory, game_id)
-            for bot_name, bot_factory in bot_factories.items()
-            for game_id in range(self.num_games)
-        ]
+        all_data = []
 
-        self.results = [self.run_single_game(task) for task in tasks]
+        for name, bot_creator in dodge_methods.items():
+            print(f"Running: {name}")
+            self.results[name] = {}
 
+            for run_count in self.run_counts:
+                scores = []
+                for _ in range(run_count):
+                    bot = bot_creator()
+                    try:
+                        score = bot.play()  # bot cần có
+                    except Exception as e:
+                        print(f"Bot {name} lỗi trong lượt chạy: {e}")
+                        score = 0
+                    scores.append(score)
+
+                avg_score = np.mean(scores)
+                self.results[name][run_count] = avg_score
+
+                all_data.append({
+                    "algorithm": name,
+                    "run_count": run_count,
+                    "avg_score": avg_score
+                })
 
         if save_csv:
-            self._save_results(csv_filename)
+            with open(csv_filename, "w", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=["algorithm", "run_count", "avg_score"])
+                writer.writeheader()
+                writer.writerows(all_data)
 
-        if plot:
-            self._plot_results(output_path=plot_filename)
+        if save_plot:
+            df = pd.DataFrame(all_data)
 
-    def _save_results(self, filename):
-        with open(filename, "w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=["bot", "game_id", "score"])
-            writer.writeheader()
-            writer.writerows(self.results)
+            plt.figure(figsize=(12, 6))
+            for algo in df["algorithm"].unique():
+                subset = df[df["algorithm"] == algo]
+                plt.plot(subset["run_count"], subset["avg_score"], marker='o', label=algo)
 
-    def _plot_results(self, output_path=None):
-        df = pd.DataFrame(self.results)
-        sns.set(style="whitegrid")
-        plt.figure(figsize=(14, 7))
-        sns.lineplot(data=df, x="game_id", y="score", hue="bot", marker="o")
-        plt.title("Bot Score over Multiple Games")
-        plt.xlabel("Game Number")
-        plt.ylabel("Score")
-        plt.legend(title="Bot/Algorithm")
-        plt.tight_layout()
-
-        if output_path:
-            plt.savefig(output_path)
-            print(f"✅ Đã lưu biểu đồ vào: {output_path}")
-        else:
+            plt.xlabel("Số lượt chơi (games)")
+            plt.ylabel("Điểm trung bình")
+            plt.title("So sánh hiệu năng các thuật toán tránh vật thể")
+            plt.legend()
+            plt.grid(True)
+            plt.savefig(save_path)
             plt.show()
+
