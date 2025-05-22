@@ -15,7 +15,7 @@ from bot.bot_manager import BotManager
 from bot.heuristic_dodge import HeuristicDodgeBot
 
 class BenchmarkRunner:
-    def __init__(self, run_counts=[10, 50, 100, 200, 1000]):
+    def __init__(self, run_counts=[5,10,20]):
         self.run_counts = run_counts
         self.results = {}
 
