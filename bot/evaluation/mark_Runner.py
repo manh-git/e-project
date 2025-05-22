@@ -47,26 +47,29 @@ class HeadlessBenchmark:
             while True:
                 state = game.get_state()
 
-                # Xử lý player
+                # Xử lý player 
                 if 'player' in state:
                     p = state['player']
                     if isinstance(p, (list, tuple, np.ndarray)) and len(p) == 2:
-                        state['player'] = SimpleNamespace(x=p[0], y=p[1])
-                    elif not hasattr(p, 'x') or not hasattr(p, 'y'):
+                        state['player'] = SimpleNamespace(x=float(p[0]), y=float(p[1]))
+                    elif hasattr(p, 'x') and hasattr(p, 'y'):
+                        state['player'] = SimpleNamespace(x=float(p.x), y=float(p.y))
+                    else:
                         print(f"[WARN] Player không rõ định dạng: {p}")
                         continue
 
-                # Xử lý bullets
+# Xử lý bullets
                 if 'bullets' in state:
                     new_bullets = []
                     for bullet in state['bullets']:
                         if isinstance(bullet, (list, tuple, np.ndarray)) and len(bullet) == 2:
-                            new_bullets.append(SimpleNamespace(x=bullet[0], y=bullet[1]))
+                            new_bullets.append(SimpleNamespace(x=float(bullet[0]), y=float(bullet[1])))
                         elif hasattr(bullet, 'x') and hasattr(bullet, 'y'):
-                            new_bullets.append(bullet)
+                            new_bullets.append(SimpleNamespace(x=float(bullet.x), y=float(bullet.y)))
                         else:
                             print(f"[WARN] Bullet không rõ định dạng: {bullet}")
                     state['bullets'] = new_bullets
+
 
                 action = bot.get_action(state)
                 game.update(action)
