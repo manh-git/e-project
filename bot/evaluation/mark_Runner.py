@@ -9,6 +9,7 @@ import pygame
 import traceback
 import numpy as np
 from types import SimpleNamespace
+import matplotlib.gridspec as gridspec
 
 # Cấu hình project path
 project_root = '/content/project'
@@ -133,6 +134,8 @@ def setup_environment():
         print(f"[WARN] Không thể tạo cửa sổ pygame: {e}")
     print("[DEBUG] pygame đã khởi tạo")
 
+
+
 def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
     """Lưu kết quả và vẽ biểu đồ đường theo số lượt chơi"""
     os.makedirs(base_path, exist_ok=True)
@@ -147,31 +150,44 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
     # Tính điểm trung bình theo mỗi lượt chơi và thuật toán
     summary = df.groupby(["algorithm", "run"])["score"].mean().reset_index()
 
-    # Vẽ biểu đồ
-    plt.figure(figsize=(14, 8))
+    # Tạo layout chia vùng vẽ
+    fig = plt.figure(figsize=(14, 8))
+    spec = gridspec.GridSpec(ncols=2, nrows=1, width_ratios=[5, 1])  # chia 2 vùng, tỷ lệ 5:1
+
+    ax_main = fig.add_subplot(spec[0])  # vùng chính vẽ biểu đồ
+    ax_legend = fig.add_subplot(spec[1])  # vùng phụ chứa legend
+    ax_legend.axis("off")  # tắt trục vùng legend
+
     algorithms = summary["algorithm"].unique()
+    lines = []
+    labels = []
 
     for algo in algorithms:
         algo_df = summary[summary["algorithm"] == algo]
-        plt.plot(algo_df["run"], algo_df["score"], marker="o", label=algo)
+        line, = ax_main.plot(algo_df["run"], algo_df["score"], marker="o", label=algo)
+        lines.append(line)
+        labels.append(algo)
 
         # Tô chấm tròn lớn tại các mốc đặc biệt
         highlight_runs = [10, 20, 50, 100]
         highlight_points = algo_df[algo_df["run"].isin(highlight_runs)]
-        plt.scatter(highlight_points["run"], highlight_points["score"], 
-                    s=100, edgecolors='black', zorder=5)
+        ax_main.scatter(highlight_points["run"], highlight_points["score"], 
+                        s=100, edgecolors='black', zorder=5)
 
-    plt.title("Điểm trung bình theo số lượt chơi", fontsize=16)
-    plt.xlabel("Số lượt chơi (Run)", fontsize=14)
-    plt.ylabel("Điểm trung bình", fontsize=14)
-    plt.legend(title="Thuật toán", fontsize=12)
-    plt.grid(True)
+    ax_main.set_title("Điểm trung bình theo số lượt chơi", fontsize=16)
+    ax_main.set_xlabel("Số lượt chơi (Run)", fontsize=14)
+    ax_main.set_ylabel("Điểm trung bình", fontsize=14)
+    ax_main.grid(True)
+
+    # Thêm legend vào khu vực bên phải
+    ax_legend.legend(lines, labels, title="Thuật toán", fontsize=12, loc='center left')
 
     plot_path = f"{base_path}/benchmark_plot.png"
     plt.savefig(plot_path, bbox_inches='tight')
     plt.close()
 
     return csv_path, plot_path
+
 
 
 if __name__ == "__main__":
