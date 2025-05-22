@@ -56,7 +56,7 @@ def run_single_bot(name, algorithm_enum, run_counts):
     return name, results, all_data
 
 class BenchmarkRunner:
-    def __init__(self, run_counts=[10, 50, 100]):
+    def __init__(self, run_counts=[2,4,6]):
         self.run_counts = run_counts
         self.results = {}
 
