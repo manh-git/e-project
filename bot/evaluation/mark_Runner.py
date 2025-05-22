@@ -48,6 +48,11 @@ class HeadlessBenchmark:
                 state = game.get_state()
 
                 if getattr(bot, "is_heuristic", False):
+                    # Bỏ qua nếu state là numpy array (không hợp với bot heuristic)
+                    if isinstance(state, np.ndarray):
+                        print(f"[WARN] Bỏ qua state không hợp lệ cho bot heuristic: numpy array")
+                        continue
+
                     # Bot heuristic cần xử lý bullets từ state
                     if hasattr(state, 'bullets'):
                         bullets = state.bullets
@@ -190,4 +195,3 @@ if __name__ == "__main__":
         print("\nBenchmark không có kết quả để lưu!")
 
     pygame.quit()
-
