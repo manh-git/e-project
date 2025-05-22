@@ -75,20 +75,19 @@ class HeadlessBenchmark:
         return pd.DataFrame(self.results)
 
 def setup_environment():
-    """Cấu hình môi trường cho Colab hoặc local"""
     try:
         from IPython import get_ipython
-        ipython = get_ipython()
-        if ipython and 'google.colab' in str(ipython):
+        ipy = get_ipython()
+        if ipy and 'google.colab' in str(ipy):
             from google.colab import drive
             drive.mount('/content/drive')
             os.environ['SDL_VIDEODRIVER'] = 'dummy'
-    except ImportError:
-        # Không phải môi trường IPython, bỏ qua
+    except Exception:
         pass
 
     pygame.init()
     pygame.display.set_mode((1, 1))
+
 
 def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
     """Lưu kết quả và biểu đồ"""
