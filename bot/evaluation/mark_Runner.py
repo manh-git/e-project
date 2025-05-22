@@ -1,32 +1,24 @@
-# mark_runner.py
 import os
 os.environ["SDL_VIDEODRIVER"] = "dummy"
-os.environ["SDL_AUDIODRIVER"] = "dummy"
 
-import sys
-sys.stderr = open(os.devnull, 'w')  # tắt ALSA warnings
+import pygame
+pygame.init()
+pygame.display.set_mode((1, 1))
 
 import traceback
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import csv
-from multiprocessing import Pool
+
+from game.game_core import Game
+from bot.bot_manager import BotManager
 
 def run_single_bot(name, algorithm_enum, run_counts):
-    import os
-    os.environ["SDL_VIDEODRIVER"] = "dummy"
-    os.environ["SDL_AUDIODRIVER"] = "dummy"
-
-    import pygame
-    pygame.init()
-    pygame.display.set_mode((1, 1))
-
-    import numpy as np
-    import traceback
-
     from game.game_core import Game
     from bot.bot_manager import BotManager
+    import numpy as np
+    import traceback
 
     results = {}
     all_data = []
@@ -46,11 +38,11 @@ def run_single_bot(name, algorithm_enum, run_counts):
 
                 score = game.score
             except Exception as e:
-                print(f"[{name}] lỗi ở lượt {i+1}: {e}")
+                print(f"[{name}] lỗi ở lượt {i+1}: {e}", flush=True)
                 traceback.print_exc()
                 score = 0
 
-            print(f"[{name}] Game {i+1}/{run_count}: Score = {score}")
+            print(f"[{name}] Game {i+1}/{run_count}: Score = {score}", flush=True)
             scores.append(score)
 
         avg_score = np.mean(scores)
@@ -63,7 +55,6 @@ def run_single_bot(name, algorithm_enum, run_counts):
 
     return name, results, all_data
 
-
 class BenchmarkRunner:
     def __init__(self, run_counts=[10, 50, 100]):
         self.run_counts = run_counts
@@ -72,15 +63,10 @@ class BenchmarkRunner:
     def run(self, dodge_methods, save_csv=True, csv_filename="benchmark_result.csv",
             save_plot=True, save_path="/content/drive/MyDrive/benchmark_score_plot.png"):
 
-        args = [(name, algo_enum, self.run_counts) for name, algo_enum in dodge_methods.items()]
+        first_name, first_algo_enum = list(dodge_methods.items())[0]
+        name, result, all_data = run_single_bot(first_name, first_algo_enum, self.run_counts)
 
-        with Pool(processes=min(len(dodge_methods), os.cpu_count())) as pool:
-            results_list = pool.starmap(run_single_bot, args)
-
-        all_data = []
-        for name, result, data in results_list:
-            self.results[name] = result
-            all_data.extend(data)
+        self.results[name] = result
 
         if save_csv:
             with open(csv_filename, "w", newline="") as f:
@@ -92,17 +78,12 @@ class BenchmarkRunner:
             df = pd.DataFrame(all_data)
 
             plt.figure(figsize=(12, 6))
-            for algo in df["algorithm"].unique():
-                subset = df[df["algorithm"] == algo]
-                plt.plot(subset["run_count"], subset["avg_score"], marker='o', label=algo)
+            plt.plot(df["run_count"], df["avg_score"], marker='o', label=first_name)
 
             plt.xlabel("Số lượt chơi (games)")
             plt.ylabel("Điểm trung bình")
-            plt.title("So sánh hiệu năng các thuật toán tránh vật thể")
+            plt.title("So sánh hiệu năng thuật toán tránh vật thể")
             plt.legend()
             plt.grid(True)
             plt.savefig(save_path)
             plt.show()
-
-
-
