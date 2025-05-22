@@ -18,12 +18,7 @@ def main():
 
     dodge_methods = {
         "Furthest Safe Direction": DodgeAlgorithm.FURTHEST_SAFE_DIRECTION,
-        "Least Danger": DodgeAlgorithm.LEAST_DANGER_PATH,
-        "Least Danger Advanced": DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED,
-        "Opposite Threat Direction": DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION,
-        "Random Safe Zone": DodgeAlgorithm.RANDOM_SAFE_ZONE,
-        "DL Param Numpy": DodgeAlgorithm.DL_PARAM_INPUT_NUMPY,
-        "DL Param Torch": DodgeAlgorithm.DL_PARAM_INPUT_TORCH
+        
     }
 
     runner = BenchmarkRunner()
