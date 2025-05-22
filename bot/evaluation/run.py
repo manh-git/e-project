@@ -21,9 +21,11 @@ def main():
         
     }
 
-    runner = BenchmarkRunner()
+     runner = BenchmarkRunner(run_counts=[3])
+
     save_path = "/content/drive/MyDrive/game_ai/benchmark_score_plot.png"
-    runner.run(dodge_methods=dodge_methods, save_plot=True, save_path=save_path)
+    csv_path = "/content/drive/MyDrive/game_ai/benchmark_results.csv"
+    runner.run(dodge_methods=dodge_methods, save_csv=True, csv_filename=csv_path, save_plot=True, save_path=save_path)
 
 
 if __name__ == "__main__":
