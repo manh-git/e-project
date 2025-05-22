@@ -149,7 +149,7 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
     for algo in algorithms:
         algo_df = df[df['algorithm'] == algo].copy()
         algo_df['cumulative_avg'] = algo_df['score'].expanding().mean()
-        plt.plot(algo_df['run'], algo_df['cumulative_avg'], marker='o', label=algo)
+        plt.plot(algo_df['run'], algo_df['cumulative_avg'],label=algo)
     
     plt.title("Algorithm Comparison (Cumulative Average)", fontsize=16)
     plt.xlabel("Number of Runs", fontsize=14)
