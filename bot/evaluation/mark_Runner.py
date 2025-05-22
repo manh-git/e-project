@@ -1,88 +1,153 @@
-import os
-os.environ["SDL_VIDEODRIVER"] = "dummy"
-
-import pygame
-pygame.init()
-pygame.display.set_mode((1, 1))
-
-import traceback
-import matplotlib.pyplot as plt
-import numpy as np
+import time
 import pandas as pd
-import csv
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+from concurrent.futures import ThreadPoolExecutor
+import pygame
 from game.game_core import Game
 from bot.bot_manager import BotManager
+from configs.bot_config import DodgeAlgorithm
+import os
 
-def run_single_bot(name, create_bot_func, run_counts):
-    results = {}
-    all_data = []
+class GameOverBenchmark:
+    def __init__(self, num_runs=5, num_threads=4):
+        self.num_runs = num_runs
+        self.num_threads = num_threads
+        self.results = []
 
-    for run_count in run_counts:
-        scores = []
-        for i in range(run_count):
+    def _run_until_game_over(self, name, algorithm, run_idx):
+        try:
+            pygame.init()
+            screen = pygame.display.set_mode((1280, 720))
             game = Game()
-            bot = create_bot_func(game)
-            print(f"[{name}] Bot khởi tạo xong: {bot}")
+            bot_manager = BotManager(game)
+            
+            if isinstance(algorithm, DodgeAlgorithm):
+                bot = bot_manager.create_bot(algorithm)
+            elif algorithm == "DL_NUMPY":
+                bot = bot_manager.create_bot(DodgeAlgorithm.DL_PARAM_INPUT_NUMPY)
+            elif algorithm == "DL_TORCH":
+                bot = bot_manager.create_bot(DodgeAlgorithm.DL_PARAM_INPUT_TORCH)
 
-            try:
-                print(f"[{name}] Game {i+1}/{run_count}: Bắt đầu chạy game", flush=True)
-                if getattr(bot, "is_heuristic", False) or not hasattr(bot, "train"):
-                    game.run(bot, render=False)
-                else:
-                    game.run(bot, mode="eval", render=False)
+            start_time = time.time()
+            clock = pygame.time.Clock()
+            
+            while True:
+                clock.tick(60)
+                state = game.get_state()
+                action = bot.get_action(state)
+                game.update(action)
+                if game.game_over:
+                    break
+                game.draw()
+                pygame.display.flip()
+            
+            result = {
+                "algorithm": name,
+                "run": run_idx + 1,
+                "score": game.score,
+                "duration": time.time() - start_time
+            }
+            pygame.quit()
+            return result
+        except Exception as e:
+            print(f"Lỗi {name} lần {run_idx}: {str(e)}")
+            pygame.quit()
+            return None
 
-                score = game.score
-            except Exception as e:
-                print(f"[{name}] lỗi ở lượt {i+1}: {e}", flush=True)
-                traceback.print_exc()
-                score = 0
+    def run_benchmark(self, algorithms, save_csv=False, csv_path=None):
+        with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
+            futures = []
+            for name, algo in algorithms.items():
+                for i in range(self.num_runs):
+                    futures.append(executor.submit(
+                        self._run_until_game_over, name, algo, i
+                    ))
+            for future in futures:
+                result = future.result()
+                if result:
+                    self.results.append(result)
+        
+        df = pd.DataFrame(self.results)
+        if save_csv and csv_path is not None:
+            os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+            df.to_csv(csv_path, index=False)
+            print(f"Đã lưu kết quả CSV tại: {csv_path}")
+        return df
 
-            print(f"[{name}] Game {i+1}/{run_count}: Score = {score}", flush=True)
-            scores.append(score)
+    def plot_results(self, save_plot=False, plot_path=None):
+        if not self.results:
+            print("Chưa có dữ liệu!")
+            return
+        
+        df = pd.DataFrame(self.results)
+        plt.figure(figsize=(15, 8))
+        
+        sns.scatterplot(
+            x='run',
+            y='score',
+            hue='algorithm',
+            data=df,
+            s=100,
+            alpha=0.7,
+            palette='tab10'
+        )
+        
+        sns.lineplot(
+            x='run',
+            y='score',
+            hue='algorithm',
+            data=df,
+            palette='tab10',
+            alpha=0.3,
+            legend=False
+        )
+        
+        plt.title("ĐIỂM SỐ KHI GAME OVER", fontsize=16)
+        plt.xlabel("Lần chạy", fontsize=14)
+        plt.ylabel("Điểm số", fontsize=14)
+        plt.xticks(range(1, self.num_runs + 1))
+        plt.grid(alpha=0.3)
+        
+        plt.tight_layout()
 
-        avg_score = np.mean(scores)
-        results[run_count] = avg_score
-        all_data.append({
-            "algorithm": name,
-            "run_count": run_count,
-            "avg_score": avg_score
-        })
+        if save_plot and plot_path is not None:
+            os.makedirs(os.path.dirname(plot_path), exist_ok=True)
+            plt.savefig(plot_path)
+            print(f"Đã lưu biểu đồ tại: {plot_path}")
 
-    return name, results, all_data
+        plt.show()
 
-class BenchmarkRunner:
-    def __init__(self, run_counts=[1]):
-        self.run_counts = run_counts
-        self.results = {}
+# Ví dụ sử dụng (trong Google Colab, bạn gắn đúng đường dẫn Drive của bạn)
+if __name__ == "__main__":
+    algorithms = {
+        "Furthest Safe": DodgeAlgorithm.FURTHEST_SAFE_DIRECTION,
+        "Least Danger": DodgeAlgorithm.LEAST_DANGER_PATH,
+        "Least Danger Adv": DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED,
+        "Random Safe": DodgeAlgorithm.RANDOM_SAFE_ZONE,
+        "Opposite Threat": DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION,
+        "DL Numpy": "DL_NUMPY",
+        "DL PyTorch": "DL_TORCH"
+    }
 
-    def run(self, dodge_methods, save_csv=True, csv_filename="benchmark_result.csv",
-            save_plot=True, save_path="/content/drive/MyDrive/benchmark_score_plot.png"):
+    benchmark = GameOverBenchmark(num_runs=5, num_threads=4)
 
-        all_data = []
-        for name, create_bot_func in dodge_methods.items():
-            name, result, data = run_single_bot(name, create_bot_func, self.run_counts)
-            self.results[name] = result
-            all_data.extend(data)
+    # Đường dẫn lưu trên Google Drive (bạn thay đổi theo thư mục của bạn)
+    csv_file_path = "/content/drive/MyDrive/game_ai/benchmark_results.csv"
+    plot_file_path = "/content/drive/MyDrive/game_ai/benchmark_score_plot.png"
 
-        if save_csv:
-            with open(csv_filename, "w", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=["algorithm", "run_count", "avg_score"])
-                writer.writeheader()
-                writer.writerows(all_data)
+    results_df = benchmark.run_benchmark(
+        algorithms,
+        save_csv=True,
+        csv_path=csv_file_path
+    )
+    print("Kết quả chi tiết:")
+    print(results_df)
 
-        if save_plot:
-            df = pd.DataFrame(all_data)
+    print("\nThống kê:")
+    print(results_df.groupby('algorithm')['score'].describe())
 
-            plt.figure(figsize=(12, 6))
-            for name in df["algorithm"].unique():
-                df_algo = df[df["algorithm"] == name]
-                plt.plot(df_algo["run_count"], df_algo["avg_score"], marker='o', label=name)
-
-            plt.xlabel("Số lượt chơi (games)")
-            plt.ylabel("Điểm trung bình")
-            plt.title("So sánh hiệu năng thuật toán tránh vật thể")
-            plt.legend()
-            plt.grid(True)
-            plt.savefig(save_path)
-            plt.show()
+    benchmark.plot_results(
+        save_plot=True,
+        plot_path=plot_file_path
+    )
