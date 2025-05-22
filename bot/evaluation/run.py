@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import sys
 
@@ -15,7 +16,6 @@ from configs.bot_config import DodgeAlgorithm
 def main():
     game = Game()
 
-   
     dodge_methods = {
         "Furthest Safe Direction": DodgeAlgorithm.FURTHEST_SAFE_DIRECTION,
         "Least Danger": DodgeAlgorithm.LEAST_DANGER_PATH,
@@ -30,7 +30,8 @@ def main():
     save_path = "/content/drive/MyDrive/game_ai/benchmark_score_plot.png"
     runner.run(dodge_methods=dodge_methods, save_plot=True, save_path=save_path)
 
+
 if __name__ == "__main__":
+    # Quan trọng: để multiprocessing hoạt động ổn định ở Colab và Linux
+    multiprocessing.set_start_method('spawn', force=True)  
     main()
-
-
