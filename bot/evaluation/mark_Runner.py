@@ -121,14 +121,17 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
     # Create individual plots for each algorithm
     plot_paths = []
     for algo in algorithms:
-        algo_df = df[df['algorithm'] == algo]
+        algo_df = df[df['algorithm'] == algo].copy()
+        
+        # Calculate cumulative average
+        algo_df['cumulative_avg'] = algo_df['score'].expanding().mean()
         
         plt.figure(figsize=(10, 6))
-        plt.plot(algo_df['run'], algo_df['score'], marker='o', color='blue')
+        plt.plot(algo_df['run'], algo_df['cumulative_avg'], marker='o', color='blue')
         
         plt.title(f"Performance of {algo}", fontsize=16)
         plt.xlabel("Run Number", fontsize=14)
-        plt.ylabel("Score", fontsize=14)
+        plt.ylabel("Cumulative Average Score", fontsize=14)
         plt.grid(True)
         
         # Save individual plot
@@ -144,12 +147,13 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
     plt.subplots_adjust(right=0.75)
     
     for algo in algorithms:
-        algo_df = df[df['algorithm'] == algo]
-        plt.plot(algo_df['run'], algo_df['score'], marker='o', label=algo)
+        algo_df = df[df['algorithm'] == algo].copy()
+        algo_df['cumulative_avg'] = algo_df['score'].expanding().mean()
+        plt.plot(algo_df['run'], algo_df['cumulative_avg'], marker='o', label=algo)
     
-    plt.title("Algorithm Comparison", fontsize=16)
+    plt.title("Algorithm Comparison (Cumulative Average)", fontsize=16)
     plt.xlabel("Number of Runs", fontsize=14)
-    plt.ylabel("Score", fontsize=14)
+    plt.ylabel("Cumulative Average Score", fontsize=14)
     plt.grid(True)
     
     # Place legend on the right side outside the plot area
