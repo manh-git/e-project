@@ -7,7 +7,6 @@ from concurrent.futures import ThreadPoolExecutor
 import pygame
 import numpy as np
 from types import SimpleNamespace
-import matplotlib.gridspec as gridspec
 
 # Configure project path
 project_root = '/content/project'
@@ -112,36 +111,49 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
     csv_path = f"{base_path}/benchmark_results.csv"
     df.to_csv(csv_path, index=False)
 
-    summary = df.groupby(["algorithm", "run"])["score"].mean().reset_index()
+    # Create a directory for individual plots
+    plots_dir = os.path.join(base_path, "individual_plots")
+    os.makedirs(plots_dir, exist_ok=True)
 
-    fig = plt.figure(figsize=(14, 8))
-    spec = gridspec.GridSpec(ncols=2, nrows=1, width_ratios=[5, 1])
-
-    ax_main = fig.add_subplot(spec[0])
-    ax_legend = fig.add_subplot(spec[1])
-    ax_legend.axis("off")
-
-    algorithms = summary["algorithm"].unique()
-    lines = []
-    labels = []
-
+    # Get unique algorithms
+    algorithms = df['algorithm'].unique()
+    
+    # Create individual plots for each algorithm
+    plot_paths = []
     for algo in algorithms:
-        algo_df = summary[summary["algorithm"] == algo]
-        line, = ax_main.plot(algo_df["run"], algo_df["score"], marker="o", label=algo)
-        lines.append(line)
-        labels.append(algo)
+        algo_df = df[df['algorithm'] == algo]
+        
+        plt.figure(figsize=(10, 6))
+        plt.plot(algo_df['run'], algo_df['score'], marker='o', color='blue')
+        
+        plt.title(f"Performance of {algo}", fontsize=16)
+        plt.xlabel("Run Number", fontsize=14)
+        plt.ylabel("Score", fontsize=14)
+        plt.grid(True)
+        
+        # Save individual plot
+        plot_path = os.path.join(plots_dir, f"{algo.replace(' ', '_')}_plot.png")
+        plt.savefig(plot_path, bbox_inches='tight')
+        plt.close()
+        plot_paths.append(plot_path)
 
-    ax_main.set_title("Algorithm Comparison", fontsize=16)
-    ax_main.set_xlabel("Number of Runs", fontsize=14)
-    ax_main.set_ylabel("Score", fontsize=14)
-    ax_main.grid(True)
-    ax_legend.legend(lines, labels, title="Algorithms", fontsize=12, loc='center left')
-
-    plot_path = f"{base_path}/benchmark_plot.png"
-    plt.savefig(plot_path, bbox_inches='tight')
+    # Create a combined plot for reference
+    plt.figure(figsize=(14, 8))
+    for algo in algorithms:
+        algo_df = df[df['algorithm'] == algo]
+        plt.plot(algo_df['run'], algo_df['score'], marker='o', label=algo)
+    
+    plt.title("Algorithm Comparison", fontsize=16)
+    plt.xlabel("Number of Runs", fontsize=14)
+    plt.ylabel("Score", fontsize=14)
+    plt.legend(title="Algorithms", fontsize=12)
+    plt.grid(True)
+    
+    combined_plot_path = f"{base_path}/combined_plot.png"
+    plt.savefig(combined_plot_path, bbox_inches='tight')
     plt.close()
-
-    return csv_path, plot_path
+    
+    return csv_path, plot_paths, combined_plot_path
 
 if __name__ == "__main__":
     setup_environment()
@@ -156,15 +168,18 @@ if __name__ == "__main__":
         "DL Param Torch": DodgeAlgorithm.DL_PARAM_INPUT_TORCH,
     }
 
-    benchmark = HeadlessBenchmark(num_runs=50, num_threads=4)
+    benchmark = HeadlessBenchmark(num_runs=10, num_threads=4)
     results_df = benchmark.run(algorithms)
 
-    csv_file, plot_file = save_results(results_df)
+    csv_file, individual_plots, combined_plot = save_results(results_df)
 
-    if csv_file and plot_file:
+    if csv_file and individual_plots:
         print("\nBenchmark completed!")
         print(f"→ CSV results: {csv_file}")
-        print(f"→ Plot: {plot_file}")
+        print("→ Individual plots:")
+        for plot in individual_plots:
+            print(f"   - {plot}")
+        print(f"→ Combined plot: {combined_plot}")
         print("\nScore statistics:")
         print(results_df.groupby('algorithm')['score'].describe())
 
