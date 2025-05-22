@@ -4,7 +4,7 @@ os.environ["SDL_VIDEODRIVER"] = "dummy"
 import pygame
 pygame.init()
 pygame.display.set_mode((1, 1))  # tạo cửa sổ ảo nhỏ, tránh lỗi NoneType
-
+import traceback
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -46,6 +46,7 @@ class BenchmarkRunner:
                         score = game.score
                     except Exception as e:
                         print(f"Bot {name} lỗi trong lượt chạy: {e}")
+                        traceback.print_exc()
                         score = 0
                     scores.append(score)
 
