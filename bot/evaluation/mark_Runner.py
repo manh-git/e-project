@@ -1,9 +1,13 @@
+import os
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+import pygame
+pygame.init()
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import csv
-import pygame  
-from google.colab import drive
 
 from game.game_core import Game
 from bot.bot_manager import BotManager
@@ -16,7 +20,7 @@ class BenchmarkRunner:
 
     def run(self, dodge_methods, save_csv=True, csv_filename="benchmark_result.csv",
             save_plot=True, save_path="/content/drive/MyDrive/benchmark_score_plot.png"):
-        pygame.init()
+
         all_data = []
 
         for name, algorithm_enum in dodge_methods.items():
@@ -27,8 +31,6 @@ class BenchmarkRunner:
                 scores = []
                 for _ in range(run_count):
                     game = Game()
-
-  
                     game.surface = pygame.Surface((800, 800))
 
                     bot_manager = BotManager(game)
