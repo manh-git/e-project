@@ -73,7 +73,12 @@ class HeadlessBenchmark:
                     state['bullets'] = new_bullets
 
 
-                action = bot.get_action(state)
+                # Nếu bot là heuristic, chỉ truyền bullets
+                 if getattr(bot, "is_heuristic", False):
+                     action = bot.get_action(state['bullets'])
+                 else:
+                     action = bot.get_action(state)
+
                 game.update(action)
                 if game.game_over:
                     break
