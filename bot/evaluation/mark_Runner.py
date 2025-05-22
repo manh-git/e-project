@@ -35,7 +35,11 @@ class HeadlessBenchmark:
             bot_creators = {
                 DodgeAlgorithm.FURTHEST_SAFE_DIRECTION: lambda: bot_manager.create_bot(DodgeAlgorithm.FURTHEST_SAFE_DIRECTION),
                 DodgeAlgorithm.LEAST_DANGER_PATH: lambda: bot_manager.create_bot(DodgeAlgorithm.LEAST_DANGER_PATH),
-                DodgeAlgorithm.DL_PARAM_INPUT_NUMPY: lambda: bot_manager.create_bot(DodgeAlgorithm.DL_PARAM_INPUT_NUMPY)
+                DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED: lambda: bot_manager.create_bot(DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED),
+                DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION: lambda: bot_manager.create_bot(DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION),
+                DodgeAlgorithm.RANDOM_SAFE_ZONE: lambda: bot_manager.create_bot(DodgeAlgorithm.RANDOM_SAFE_ZONE),
+                DodgeAlgorithm.DL_PARAM_INPUT_NUMPY: lambda: bot_manager.create_bot(DodgeAlgorithm.DL_PARAM_INPUT_NUMPY),
+                DodgeAlgorithm.DL_PARAM_INPUT_TORCH: lambda: bot_manager.create_bot(DodgeAlgorithm.DL_PARAM_INPUT_TORCH)
             }
 
             bot = bot_creators.get(algorithm, lambda: None)()
@@ -177,7 +181,14 @@ if __name__ == "__main__":
     algorithms = {
         "Furthest Safe": DodgeAlgorithm.FURTHEST_SAFE_DIRECTION,
         "Least Danger": DodgeAlgorithm.LEAST_DANGER_PATH,
-        "DL Numpy": DodgeAlgorithm.DL_PARAM_INPUT_NUMPY
+        "Least Danger Advanced": DodgeAlgorithm.LEAST_DANGER_PATH_ADVANCED,
+        "Opposite Threat Direction": DodgeAlgorithm.OPPOSITE_THREAT_DIRECTION,
+        "Random Safe Zone": DodgeAlgorithm.RANDOM_SAFE_ZONE,
+        
+        "DL Numpy": DodgeAlgorithm.DL_PARAM_INPUT_NUMPY,
+        "DL Param Torch": DodgeAlgorithm.DL_PARAM_INPUT_TORCH,
+
+        
     }
 
     benchmark = HeadlessBenchmark(num_runs=10, num_threads=4)
