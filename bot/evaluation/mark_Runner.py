@@ -81,14 +81,14 @@ class HeadlessBenchmark:
 def setup_environment():
     print("[DEBUG] Bắt đầu setup môi trường")
     try:
-        if 'google.colab' in sys.modules:
-            from google.colab import drive
-            drive.mount('/content/drive')
-            print("[DEBUG] Mount drive thành công")
-        else:
-            print("[DEBUG] Không phải môi trường Colab, bỏ qua mount")
+        from google.colab import drive
+        drive.mount('/content/drive')
+        print("[DEBUG] Mount drive thành công")
     except Exception as e:
         print(f"[WARN] Lỗi mount drive: {e}")
+
+    os.environ["SDL_VIDEODRIVER"] = "dummy"
+    os.environ["SDL_AUDIODRIVER"] = "dummy"
 
     pygame.init()
     try:
@@ -96,6 +96,7 @@ def setup_environment():
     except Exception as e:
         print(f"[WARN] Không thể tạo cửa sổ pygame: {e}")
     print("[DEBUG] pygame đã khởi tạo")
+
 
 
 
