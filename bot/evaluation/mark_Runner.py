@@ -31,6 +31,7 @@ def run_single_bot(name, algorithm_enum, run_counts):
             bot = bot_manager.create_bot(algorithm_enum)
 
             try:
+                print(f"[{name}] Game {i+1}/{run_count}: Bắt đầu chạy game", flush=True)
                 if getattr(bot, "is_heuristic", False) or not hasattr(bot, "train"):
                     game.run(bot, render=False)
                 else:
