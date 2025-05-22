@@ -17,6 +17,7 @@ if project_root not in sys.path:
 from game.game_core import Game
 from bot.bot_manager import BotManager
 from configs.bot_config import DodgeAlgorithm
+from types import SimpleNamespace
 
 class HeadlessBenchmark:
     def __init__(self, num_runs=5, num_threads=4):
@@ -45,6 +46,12 @@ class HeadlessBenchmark:
             start_time = time.time()
             while True:
                 state = game.get_state()
+                if 'bullets' in state:
+                    state['bullets'] = [
+                        SimpleNamespace(x=bullet[0], y=bullet[1])
+                        if isinstance(bullet, (list, tuple, np.ndarray)) else bullet
+                        for bullet in state['bullets']
+                    ]
                 action = bot.get_action(state)
                 game.update(action)
                 if game.game_over:
