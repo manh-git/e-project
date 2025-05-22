@@ -16,7 +16,7 @@ class BenchmarkRunner:
 
     def run(self, dodge_methods, save_csv=True, csv_filename="benchmark_result.csv",
             save_plot=True, save_path="/content/drive/MyDrive/benchmark_score_plot.png"):
-
+        pygame.init()
         all_data = []
 
         for name, algorithm_enum in dodge_methods.items():
