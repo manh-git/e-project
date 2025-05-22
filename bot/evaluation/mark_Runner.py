@@ -48,31 +48,31 @@ class HeadlessBenchmark:
                 state = game.get_state()
 
                 if getattr(bot, "is_heuristic", False):
-                    # Bỏ qua nếu state là numpy array (không hợp với bot heuristic)
+                    # Nếu state không hợp lệ (numpy), bỏ qua và action đứng yên
                     if isinstance(state, np.ndarray):
                         print(f"[WARN] Bỏ qua state không hợp lệ cho bot heuristic: numpy array")
                         action = pygame.Vector2(0, 0)
-
-                    # Bot heuristic cần xử lý bullets từ state
-                    if hasattr(state, 'bullets'):
-                        bullets = state.bullets
-                    elif isinstance(state, dict) and 'bullets' in state:
-                        bullets = state['bullets']
                     else:
-                        print(f"[WARN] State không có bullets: {state}")
-                        action = pygame.Vector2(0, 0) 
-
-                    processed_bullets = []
-                    for bullet in bullets:
-                        if isinstance(bullet, (list, tuple, np.ndarray)) and len(bullet) == 2:
-                            processed_bullets.append(pygame.Vector2(float(bullet[0]), float(bullet[1])))
-                        elif hasattr(bullet, 'x') and hasattr(bullet, 'y'):
-                            processed_bullets.append(pygame.Vector2(float(bullet.x), float(bullet.y)))
+                        # Bot heuristic cần xử lý bullets từ state
+                        if hasattr(state, 'bullets'):
+                            bullets = state.bullets
+                        elif isinstance(state, dict) and 'bullets' in state:
+                            bullets = state['bullets']
                         else:
-                            print(f"[WARN] Bullet không rõ định dạng: {bullet}")
-                            continue
+                            print(f"[WARN] State không có bullets: {state}")
+                            bullets = []
 
-                    action = bot.get_action(processed_bullets)
+                        processed_bullets = []
+                        for bullet in bullets:
+                            if isinstance(bullet, (list, tuple, np.ndarray)) and len(bullet) == 2:
+                                processed_bullets.append(pygame.Vector2(float(bullet[0]), float(bullet[1])))
+                            elif hasattr(bullet, 'x') and hasattr(bullet, 'y'):
+                                processed_bullets.append(pygame.Vector2(float(bullet.x), float(bullet.y)))
+                            else:
+                                print(f"[WARN] Bullet không rõ định dạng: {bullet}")
+                                continue
+
+                        action = bot.get_action(processed_bullets)
 
                 else:
                     # Bot Deep Learning dùng state là numpy array
