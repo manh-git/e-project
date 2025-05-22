@@ -16,11 +16,7 @@ from game.game_core import Game
 from bot.bot_manager import BotManager
 
 def run_single_bot(name, algorithm_enum, run_counts):
-    from game.game_core import Game
-    from bot.bot_manager import BotManager
-    import numpy as np
-    import traceback
-
+    
     results = {}
     all_data = []
 
