@@ -48,37 +48,53 @@ class HeadlessBenchmark:
                 state = game.get_state()
 
                 # Xử lý player 
-                if 'player' in state:
+                if hasattr(state, 'player'):
+                    p = state.player
+                elif isinstance(state, dict) and 'player' in state:
                     p = state['player']
-                    if isinstance(p, (list, tuple, np.ndarray)) and len(p) == 2:
-                            state['player'] = pygame.Vector2(float(p[0]), float(p[1]))
-                    elif hasattr(p, 'x') and hasattr(p, 'y'):
-                            state['player'] = pygame.Vector2(float(p.x), float(p.y))
+                else:
+                    print(f"[WARN] State không có player: {state}")
+                    continue
+
+                if isinstance(p, (list, tuple, np.ndarray)) and len(p) == 2:
+                    player = pygame.Vector2(float(p[0]), float(p[1]))
+                elif hasattr(p, 'x') and hasattr(p, 'y'):
+                    player = pygame.Vector2(float(p.x), float(p.y))
+                else:
+                    print(f"[WARN] Player không rõ định dạng: {p}")
+                    continue
+
+                # Xử lý bullets
+                if hasattr(state, 'bullets'):
+                    bullets = state.bullets
+                elif isinstance(state, dict) and 'bullets' in state:
+                    bullets = state['bullets']
+                else:
+                    print(f"[WARN] State không có bullets: {state}")
+                    continue
+
+                processed_bullets = []
+                for bullet in bullets:
+                    if isinstance(bullet, (list, tuple, np.ndarray)) and len(bullet) == 2:
+                        processed_bullets.append(pygame.Vector2(float(bullet[0]), float(bullet[1])))
+                    elif hasattr(bullet, 'x') and hasattr(bullet, 'y'):
+                        processed_bullets.append(pygame.Vector2(float(bullet.x), float(bullet.y)))
                     else:
-                        print(f"[WARN] Player không rõ định dạng: {p}")
+                        print(f"[WARN] Bullet không rõ định dạng: {bullet}")
                         continue
 
-# Xử lý bullets
-                if 'bullets' in state and isinstance(state['bullets'], (list, tuple, np.ndarray)):
-
-                    new_bullets = []
-                    for bullet in state['bullets']:
-                        if isinstance(bullet, (list, tuple, np.ndarray)) and len(bullet) == 2:
-                            new_bullets.append(pygame.Vector2(float(bullet[0]), float(bullet[1])))
-                        elif hasattr(bullet, 'x') and hasattr(bullet, 'y'):
-                            new_bullets.append(pygame.Vector2(float(bullet.x), float(bullet.y)))
-
-
-                        else:
-                            print(f"[WARN] Bullet không rõ định dạng: {bullet}")
-                    state['bullets'] = new_bullets
-
-
-                # Nếu bot là heuristic, chỉ truyền bullets
+                # Tạo state phù hợp cho bot
                 if getattr(bot, "is_heuristic", False):
-                     action = bot.get_action(state['bullets'])
+                    # For heuristic bots, pass just the processed bullets
+                    action = bot.get_action(processed_bullets)
                 else:
-                     action = bot.get_action(state)
+                    # For other bots, pass a proper state object
+                    bot_state = SimpleNamespace(
+                        player=player,
+                        bullets=processed_bullets,
+                        # Include any other necessary state attributes
+                    )
+                    action = bot.get_action(bot_state)
 
                 game.update(action)
                 if game.game_over:
