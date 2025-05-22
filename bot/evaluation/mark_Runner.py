@@ -32,10 +32,10 @@ class BenchmarkRunner:
                 scores = []
                 for _ in range(run_count):
                     game = Game()
-                    # BỎ game.surface = pygame.Surface((800, 800)) đi nhé
+                    
 
                     bot_manager = BotManager(game)
-                    bot = bot_manager.create_bot(algorithm_enum)
+                   
 
                     try:
                         if getattr(bot, "is_heuristic", False) or not hasattr(bot, "train"):
