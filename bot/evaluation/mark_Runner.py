@@ -30,10 +30,11 @@ class BenchmarkRunner:
                     bot = bot_manager.create_bot(algorithm_enum)
 
                     try:
-                        if isinstance(bot, HeuristicDodgeBot):
-                            game.run(bot, mode="heuristic", render=False)
+                        if getattr(bot, "is_heuristic", False):
+                            game.run(bot, render=False)
                         else:
                             game.run(bot, mode="eval", render=False)
+
                         score = game.score
                     except Exception as e:
                         print(f"Bot {name} lỗi trong lượt chạy: {e}")
