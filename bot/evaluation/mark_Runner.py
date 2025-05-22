@@ -14,12 +14,7 @@ import csv
 from game.game_core import Game
 from bot.bot_manager import BotManager
 
-def run_single_bot(name, algorithm_enum, run_counts):
-    from game.game_core import Game
-    from bot.bot_manager import BotManager
-    import numpy as np
-    import traceback
-
+def run_single_bot(name, create_bot_func, run_counts):
     results = {}
     all_data = []
 
@@ -27,8 +22,7 @@ def run_single_bot(name, algorithm_enum, run_counts):
         scores = []
         for i in range(run_count):
             game = Game()
-            bot_manager = BotManager(game)
-            bot = bot_manager.create_bot(algorithm_enum)
+            bot = create_bot_func(game)
 
             try:
                 print(f"[{name}] Game {i+1}/{run_count}: Bắt đầu chạy game", flush=True)
@@ -64,10 +58,11 @@ class BenchmarkRunner:
     def run(self, dodge_methods, save_csv=True, csv_filename="benchmark_result.csv",
             save_plot=True, save_path="/content/drive/MyDrive/benchmark_score_plot.png"):
 
-        first_name, first_algo_enum = list(dodge_methods.items())[0]
-        name, result, all_data = run_single_bot(first_name, first_algo_enum, self.run_counts)
-
-        self.results[name] = result
+        all_data = []
+        for name, create_bot_func in dodge_methods.items():
+            name, result, data = run_single_bot(name, create_bot_func, self.run_counts)
+            self.results[name] = result
+            all_data.extend(data)
 
         if save_csv:
             with open(csv_filename, "w", newline="") as f:
@@ -79,7 +74,9 @@ class BenchmarkRunner:
             df = pd.DataFrame(all_data)
 
             plt.figure(figsize=(12, 6))
-            plt.plot(df["run_count"], df["avg_score"], marker='o', label=first_name)
+            for name in df["algorithm"].unique():
+                df_algo = df[df["algorithm"] == name]
+                plt.plot(df_algo["run_count"], df_algo["avg_score"], marker='o', label=name)
 
             plt.xlabel("Số lượt chơi (games)")
             plt.ylabel("Điểm trung bình")
