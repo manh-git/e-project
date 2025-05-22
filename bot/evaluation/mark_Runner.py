@@ -1,4 +1,10 @@
 import time
+import os
+import sys
+
+project_root = '/content/project'
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -7,12 +13,7 @@ import pygame
 from game.game_core import Game
 from bot.bot_manager import BotManager
 from configs.bot_config import DodgeAlgorithm
-import os
-import sys
 
-project_root = '/content/project'
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
 
 class GameOverBenchmark:
     def __init__(self, num_runs=5, num_threads=4):
