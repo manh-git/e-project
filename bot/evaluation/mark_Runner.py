@@ -30,7 +30,7 @@ class BenchmarkRunner:
 
             for run_count in self.run_counts:
                 scores = []
-                for _ in range(run_count):
+                for i in range(run_count):
                     game = Game()
                     
 
