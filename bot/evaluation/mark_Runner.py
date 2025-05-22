@@ -8,12 +8,10 @@ import pygame
 import numpy as np
 from types import SimpleNamespace
 
-# Configure project path
 project_root = '/content/project'
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-
-# Import game components
+    
 from game.game_core import Game
 from bot.bot_manager import BotManager
 from configs.bot_config import DodgeAlgorithm
@@ -46,7 +44,6 @@ class HeadlessBenchmark:
             start_time = time.time()
             while True:
                 state = game.get_state()
-
                 if getattr(bot, "is_heuristic", False):
                     if isinstance(state, np.ndarray):
                         action = pygame.Vector2(0, 0)
@@ -57,7 +54,6 @@ class HeadlessBenchmark:
                             bullets = state['bullets']
                         else:
                             bullets = []
-
                         processed_bullets = []
                         for bullet in bullets:
                             if isinstance(bullet, (list, tuple, np.ndarray)) and len(bullet) == 2:
@@ -131,11 +127,7 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
         plt.ylabel("Score", fontsize=14)
         plt.grid(True)
         
-        # Add horizontal line for average
-        avg_score = algo_df['score'].mean()
-        plt.axhline(y=avg_score, color='red', linestyle='--', 
-                   label=f'Average: {avg_score:.1f}')
-        plt.legend()
+       
         
         # Save individual plot
         plot_path = os.path.join(plots_dir, f"{algo.replace(' ', '_')}_plot.png")
