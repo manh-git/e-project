@@ -23,6 +23,7 @@ def run_single_bot(name, create_bot_func, run_counts):
         for i in range(run_count):
             game = Game()
             bot = create_bot_func(game)
+            print(f"[{name}] Bot khởi tạo xong: {bot}")
 
             try:
                 print(f"[{name}] Game {i+1}/{run_count}: Bắt đầu chạy game", flush=True)
