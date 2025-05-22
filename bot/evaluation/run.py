@@ -32,6 +32,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # Quan trọng: để multiprocessing hoạt động ổn định ở Colab và Linux
     multiprocessing.set_start_method('spawn', force=True)  
     main()
