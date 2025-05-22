@@ -48,6 +48,7 @@ class BenchmarkRunner:
                         print(f"Bot {name} lỗi trong lượt chạy: {e}")
                         traceback.print_exc()
                         score = 0
+                    print(f"{name} - Game {i + 1}/{run_count}: Score = {score}")
                     scores.append(score)
 
                 avg_score = np.mean(scores)
