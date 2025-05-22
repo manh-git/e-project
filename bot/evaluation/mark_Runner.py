@@ -118,21 +118,24 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
     # Get unique algorithms
     algorithms = df['algorithm'].unique()
     
-    # Create individual plots for each algorithm
+    # Create individual plots for each algorithm (show raw scores)
     plot_paths = []
     for algo in algorithms:
         algo_df = df[df['algorithm'] == algo].copy()
         
-        # Calculate cumulative average
-        algo_df['cumulative_avg'] = algo_df['score'].expanding().mean()
-        
         plt.figure(figsize=(10, 6))
-        plt.plot(algo_df['run'], algo_df['cumulative_avg'], marker='o', color='blue')
+        plt.plot(algo_df['run'], algo_df['score'], marker='o', color='blue')
         
-        plt.title(f"Performance of {algo}", fontsize=16)
+        plt.title(f"Performance of {algo} (Raw Scores)", fontsize=16)
         plt.xlabel("Run Number", fontsize=14)
-        plt.ylabel("Cumulative Average Score", fontsize=14)
+        plt.ylabel("Score", fontsize=14)
         plt.grid(True)
+        
+        # Add horizontal line for average
+        avg_score = algo_df['score'].mean()
+        plt.axhline(y=avg_score, color='red', linestyle='--', 
+                   label=f'Average: {avg_score:.1f}')
+        plt.legend()
         
         # Save individual plot
         plot_path = os.path.join(plots_dir, f"{algo.replace(' ', '_')}_plot.png")
@@ -140,23 +143,19 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
         plt.close()
         plot_paths.append(plot_path)
 
-    # Create a combined plot with legend on the right
+    # Create a combined plot with cumulative averages
     plt.figure(figsize=(14, 8))
-    
-    # Adjust the right margin to make space for the legend
     plt.subplots_adjust(right=0.75)
     
     for algo in algorithms:
         algo_df = df[df['algorithm'] == algo].copy()
         algo_df['cumulative_avg'] = algo_df['score'].expanding().mean()
-        plt.plot(algo_df['run'], algo_df['cumulative_avg'],label=algo)
+        plt.plot(algo_df['run'], algo_df['cumulative_avg'], label=algo)
     
-    plt.title("Algorithm Comparison (Cumulative Average)", fontsize=16)
+    plt.title("Algorithm Comparison (Cumulative Averages)", fontsize=16)
     plt.xlabel("Number of Runs", fontsize=14)
     plt.ylabel("Cumulative Average Score", fontsize=14)
     plt.grid(True)
-    
-    # Place legend on the right side outside the plot area
     plt.legend(title="Algorithms", fontsize=12, 
                bbox_to_anchor=(1.05, 1), loc='upper left')
     
