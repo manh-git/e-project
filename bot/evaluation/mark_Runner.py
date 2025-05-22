@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import csv
+import pygame  
 from google.colab import drive
 
 from game.game_core import Game
@@ -26,12 +27,16 @@ class BenchmarkRunner:
                 scores = []
                 for _ in range(run_count):
                     game = Game()
+
+  
+                    game.surface = pygame.Surface((800, 800))
+
                     bot_manager = BotManager(game)
                     bot = bot_manager.create_bot(algorithm_enum)
 
                     try:
                         if getattr(bot, "is_heuristic", False) or not hasattr(bot, "train"):
-                            game.run(bot, render=False)  
+                            game.run(bot, render=False)
                         else:
                             game.run(bot, mode="eval", render=False)
 
