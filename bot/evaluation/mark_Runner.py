@@ -174,9 +174,9 @@ def save_results(df, base_path="/content/drive/MyDrive/game_ai"):
         ax_main.scatter(highlight_points["run"], highlight_points["score"], 
                         s=100, edgecolors='black', zorder=5)
 
-    ax_main.set_title("Điểm trung bình theo số lượt chơi", fontsize=16)
-    ax_main.set_xlabel("Số lượt chơi (Run)", fontsize=14)
-    ax_main.set_ylabel("Điểm trung bình", fontsize=14)
+    ax_main.set_title("Algorithm Comparison", fontsize=16)
+    ax_main.set_xlabel("Number of Runs", fontsize=14)
+    ax_main.set_ylabel("Score", fontsize=14)
     ax_main.grid(True)
 
     # Thêm legend vào khu vực bên phải
