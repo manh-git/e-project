@@ -59,7 +59,8 @@ class HeadlessBenchmark:
                         continue
 
 # Xử lý bullets
-                if 'bullets' in state:
+                if 'bullets' in state and isinstance(state['bullets'], (list, tuple, np.ndarray)):
+
                     new_bullets = []
                     for bullet in state['bullets']:
                         if isinstance(bullet, (list, tuple, np.ndarray)) and len(bullet) == 2:
