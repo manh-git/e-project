@@ -52,7 +52,7 @@ class HeadlessBenchmark:
                     p = state['player']
                     if isinstance(p, (list, tuple, np.ndarray)) and len(p) == 2:
                             state['player'] = pygame.Vector2(float(p[0]), float(p[1]))
-                        elif hasattr(p, 'x') and hasattr(p, 'y'):
+                    elif hasattr(p, 'x') and hasattr(p, 'y'):
                             state['player'] = pygame.Vector2(float(p.x), float(p.y))
                     else:
                         print(f"[WARN] Player không rõ định dạng: {p}")
